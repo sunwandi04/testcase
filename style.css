@@ -1,3 +1,11 @@
+button p{
+    font-size: 1.1rem;
+    font-weight: 500;
+}
 div[data-testid="stExpander"] div[role="button"] p {
-    font-size: 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+}
+input[type="text"] {
+    font-size: 1.1rem;
 }
