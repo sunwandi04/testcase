@@ -38,22 +38,6 @@ user_story = st.text_input(label="📖 用户故事", label_visibility="hidden",
 prompt_userstory = "我希望你作为一个软件产品经理，负责生成验收标准，用来验证软件是否符合用户故事中指定的功能要求。验收标准应该是具体的、可衡量的、可实现的、相关的。此外，你应该确保验收标准涵盖所有可能的情况和边缘案例。通过定义清晰而全面的验收标准，你可以帮助确保软件符合必要的标准，并确保用户的需求得到满足。按照描述的格式，就下面的主题写出3条专业而详细的验收标准。请尽你最大的努力。用中文回答。只返回验收标准的内容。不要返回其他内容。" \
                    "\n主题: " + user_story
 
-prompt_testcase1 = "您是软件测试和软件质量保证方面的专家，专门从事测试用例编写。您帮助我之前的许多人，生成了满足特定需求的功能测试用例。您生成的测试用例能涵盖正常场景、异常场景和边界场景。" \
-                  "测试用例格式请参考:" \
-                  "\n用例名称:这是一个测试用例" \
-                  "\n优先级:可选值：P0、P1、P2" \
-                  "\n前置条件:这是一个测试用例的前置条件" \
-                  "\n步骤描述:" \
-                  "\n#第一个步骤" \
-                  "\n#第二个步骤" \
-                  "\n#第三个步骤" \
-                  "\n预期结果:" \
-                  "\n#第一个预期结果" \
-                  "\n#第二个预期结果" \
-                  "\n#第三个预期结果" \
-                  "\n请用中文回答，请勿返回测试用例以外的其他任何内容。" \
-                  "\n请根据我输入的主题编写2个详细、符合要求的测试用例。"
-
 prompt_testcase = "您是软件测试和软件质量保证方面的专家,专门从事功能测试,您帮助我之前的许多人生成了满足特定要求的功能测试用例。\n" \
                   "您生成的测试用例能涵盖正常场景、异常场景、边界场景。\n" \
                   "您生成的测试用例优先级包括 P0、P1、P2，P0为最高优先级，P2代表最低优先级。\n" \
@@ -67,6 +51,7 @@ prompt_testcase = "您是软件测试和软件质量保证方面的专家,专门
                   "步骤描述:\n" \
                   "预期结果:\n" \
                   "主题: "
+
 
 def clean_criteria(text):
     # 先对文本按照换行符进行分割
@@ -198,12 +183,12 @@ def export_testcase(InputCase):
 
 
 if st.button("一键生成测试用例", type="primary"):
-    print(user_story)
+    # print(user_story)
     user_story.replace("\n", "")
     criteria_box = st.expander(label="测试点拆分", expanded=True)
     with criteria_box:
         criteria_box = st.empty()
-        print(prompt_userstory)
+        # print(prompt_userstory)
         criteria = output_criteria(prompt_userstory)
     testcase_box = st.expander(label="测试用例生成", expanded=True)
     with testcase_box:
