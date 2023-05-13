@@ -1,13 +1,9 @@
-import json
-
 import dotenv
-import numpy as np
 import openai
 import re
 import pandas as pd
 import streamlit as st
 from streamlit_lottie import st_lottie
-from streamlit_extras.let_it_rain import rain
 from utils import load_lottie_url
 
 st.set_page_config(page_title="TestCaseGPT", page_icon="🤖", layout="wide")
@@ -35,13 +31,14 @@ def local_css(file_name):
 local_css("style.css")
 user_story = st.text_input(label="📖 用户故事", label_visibility="hidden",
                            placeholder="【用户故事描述】：作为___，我希望___，以便___。", key="input")
-prompt_userstory = "我希望你作为一个软件产品经理，负责生成验收标准，用来验证软件是否符合用户故事中指定的功能要求。验收标准应该是具体的、可衡量的、可实现的、相关的。此外，你应该确保验收标准涵盖所有可能的情况和边缘案例。通过定义清晰而全面的验收标准，你可以帮助确保软件符合必要的标准，并确保用户的需求得到满足。按照描述的格式，就下面的主题写出3条专业而详细的验收标准。请尽你最大的努力。用中文回答。只返回验收标准的内容。不要返回其他内容。" \
+
+prompt_userstory = "我希望你作为一个软件产品经理，负责生成验收标准，用来验证软件是否符合用户故事中指定的功能要求。验收标准应该是具体的、可衡量的、可实现的、相关的。此外，你应该确保验收标准涵盖所有可能的情况和边缘案例。通过定义清晰而全面的验收标准，你可以帮助确保软件符合必要的标准，并确保用户的需求得到满足。按照描述的格式，就下面的主题写出10条专业而详细的验收标准。请尽你最大的努力。用中文回答。只返回验收标准的内容。不要返回其他内容。" \
                    "\n主题: " + user_story
 
 prompt_testcase = "您是软件测试和软件质量保证方面的专家,专门从事功能测试,您帮助我之前的许多人生成了满足特定要求的功能测试用例。\n" \
                   "您生成的测试用例能涵盖正常场景、异常场景、边界场景。\n" \
                   "您生成的测试用例优先级包括 P0、P1、P2，P0为最高优先级，P2代表最低优先级。\n" \
-                  "以所述测试用例格式，至少编写两条关于以下主题的专业和详细测试用例。尽你最大的努力。请使用中文回答, 请勿返回除测试用例内容以外的其他内容。不要用引号包装响应。\n" \
+                  "以所述测试用例格式，至少编写五条关于以下主题的专业和详细测试用例。尽你最大的努力。请使用中文回答, 请勿返回除测试用例内容以外的其他内容。不要用引号包装响应。\n" \
                   "测试用例格式:\n" \
                   "用例编号:\n" \
                   "用例名称:\n" \
@@ -122,7 +119,6 @@ def output_testcase(case_title):
 
 def export_testcase(InputCase):
     # 定义正则表达式
-    # regex = r"用例编号：(\S+) 用例名称：(\S+) 用例类型：(\S+) 优先级：(\S+) 前置条件：(.+) 步骤描述：(.+) 预期结果：(.+)"
     regex = r"用例编号(.+) 用例名称(.+) 用例类型(.+) 优先级(.+) 前置条件(.+) 步骤描述(.+) 预期结果(.+)"
     TestCaseLines = re.findall(regex, InputCase)
     CaseIds = []
@@ -181,23 +177,38 @@ def export_testcase(InputCase):
     data = pd.DataFrame(test_case_data)
     st.dataframe(data)
 
+    # 将DataFrame写入Excel文件
+    excel_data = {'用例名称': Names, '用例类型': CaseTypes, '优先级': Priorities,
+                  '前置条件': Preconditions,
+                  '步骤描述': Steps, '预期结果': ExpectedResults, '维护人': "marsdev"}
+    data = pd.DataFrame(excel_data)
+    data.to_excel('测试用例.xlsx', index=False)
+
+    # 将Excel文件读取为字节流
+
+    if st.download_button:
+        st.error('想体验更多付费功能，请升级到 Testcaseplus💫', icon="🚨")
+        with open('测试用例.xlsx', 'rb') as f:
+            excel_bytes = f.read()
+        # 将Excel文件作为字节流提供给用户进行下载
+        st.download_button(label='导出测试用例', data=excel_bytes, file_name='测试用例.xlsx',
+                           mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
 
 if st.button("一键生成测试用例", type="primary"):
-    # print(user_story)
     user_story.replace("\n", "")
+    if not user_story:
+        st.warning('请输入用户故事')
+        st.stop()
+
     criteria_box = st.expander(label="测试点拆分", expanded=True)
     with criteria_box:
         criteria_box = st.empty()
-        # print(prompt_userstory)
         criteria = output_criteria(prompt_userstory)
     testcase_box = st.expander(label="测试用例生成", expanded=True)
     with testcase_box:
         case_box = st.empty()
-        print("Criteria Str:")
-        print(criteria)
         all_case = re.split(r"\n", criteria)
-        print("Criteria List:")
-        print(criteria)
         case_list = []
         for case in all_case:
             print("before sub")
@@ -212,3 +223,4 @@ if st.button("一键生成测试用例", type="primary"):
         print(case_list)
     testcase = output_testcase(case_list[0])
     export_testcase(testcase)
+
